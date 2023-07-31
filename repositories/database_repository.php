@@ -22,17 +22,21 @@ class MysqlRepository implements Repository
         }
     }
 
-    public function getProductAll(): array
+    public function getProductAll(): ProductCollection
     {
         $array = [];
+        $attributesArray = [];
+
         $sql = "SELECT * FROM `product`";
         $resultProd = $this->db->query($sql);
         while ($row = $resultProd->fetch_assoc()) {
             $resultAttribute = $this->db->query("SELECT `attribute`, `value` FROM product_attribute WHERE `product_id` = {$row["id"]}");
             while ($rowInner = $resultAttribute->fetch_row()) {
                 $rowAlter = array($rowInner[0] => $rowInner[1]);
-                $row = array_merge($row, $rowAlter);
+                $attributesArray = array_merge($attributesArray, $rowAlter);
             }
+            $row['attributes'] = $attributesArray;
+
             $resultImagePath = $this->db->query("SELECT `image_url` FROM product_image WHERE product_id = {$row["id"]}");
             $imagePath = $resultImagePath->fetch_row();
             if ($imagePath === null) {
@@ -40,9 +44,16 @@ class MysqlRepository implements Repository
             } else {
                 $row['path'] = $imagePath[0];
             }
-            $array[] = $row;
+            $obj = new Product(
+                $row['id'],
+                $row['name'],
+                $row['description'],
+                $row['price'],
+                $row['path'],
+                $row['attributes']);
+            $array[$row['name']] = $obj;
         }
-        return $array;
+        return new ProductCollection($array);
     }
 
 

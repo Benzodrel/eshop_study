@@ -2,8 +2,27 @@
 session_start();
 require_once 'repositories/database_repository.php';
 require_once 'repositories/config.php';
-require_once 'classes/product.php';
-require_once 'classes/cartOperations.php';
+require_once 'classes/Product.php';
+require_once 'classes/CartOperations.php';
+require_once 'classes/ProductCollection.php';
+require_once 'classes/Presenter.php';
+require_once 'classes/Controller.php';
+
+
+$connect = new MysqlRepository(HOST, DATA_BASE_NAME, USERNAME, PASSWORD);
+$present = new Presenter($connect->getProductAll());
+$controller = new Controller($present);
+
+
+if (isset($_POST['plus'])) {
+     $controller->actionPlus();
+}
+if (isset($_POST['minus'])) {
+     $controller->actionMinus();
+}
+if ( isset($_POST['clean'])) {
+    $controller->actionClean();
+}
 
 ?>
 
@@ -23,21 +42,21 @@ require_once 'classes/cartOperations.php';
             <h1>Товары</h1>
             <table class="table table-bordered table-dark table-hover">
                 <?php
-                $connect = new MysqlRepository(HOST, DATA_BASE_NAME, USERNAME, PASSWORD);
-                foreach (($connect->getProductAll()) as $product) {
+
+                foreach (($present->getListArray()) as $product) {
 
                     echo "<thead><tr>";
-                    echo "<th scope='col'> Название товара: {$product["name"]}</th>";
-                    echo "<th scope='col'>Описание: {$product["description"]}</th>";
-                    echo "<th scope='col'>Цена: {$product["price"]}</th>";
-                    if (isset($product["color"])) {
-                        echo "<th scope='col'>цвет: {$product["name"]}</th>";
-                    }
-                    if (isset($product["material"])) {
-                        echo "<th scope='col'>материал: {$product["material"]}</th>";
-                    }
+                    echo "<th scope='col'> Название товара: {$product->getName()}</th>";
+                    echo "<th scope='col'>Описание: {$product->getDescription()}</th>";
+                    echo "<th scope='col'>Цена: {$product->getPrice()}</th>";
+//                    if (isset($product["color"])) {
+//                        echo "<th scope='col'>цвет: {$product["name"]}</th>";
+//                    }
+//                    if (isset($product["material"])) {
+//                        echo "<th scope='col'>материал: {$product["material"]}</th>";
+//                    }
                     echo "<th scope='col'>
-                    <form action = 'function.php' method = 'post'> <input type='submit' class='btn btn-danger' name ='plus' value = '{$product['name']}' >В корзину</form>
+                    <form action = '' method = 'post'> <input type='submit' class='btn btn-danger' name ='plus' value = '{$product->getName()}' >В корзину</form>
                           </th>";
 
 
@@ -59,7 +78,7 @@ require_once 'classes/cartOperations.php';
                         echo "<th scope='col'> {$item['price']} </th>";
                         echo "<th scope='col'> {$item['quantity']} </th>";
                         echo "<th scope='col'> {$item['sum']} </th>";
-                        echo "<th scope='col'> <form action = 'function.php' method = 'post'><input type = 'submit' class = 'btn btn-danger' name ='minus' value ='{$item['name']}'></form></th>";
+                        echo "<th scope='col'> <form action = '' method = 'post'><input type = 'submit' class = 'btn btn-danger' name ='minus' value ='{$item['name']}'></form></th>";
                         $totalSum += $item['sum'];
 
                     }
@@ -69,8 +88,10 @@ require_once 'classes/cartOperations.php';
                 ?>
             </table>
             <?="<th scope='col'>Сумма заказа {$totalSum} </th>";?>
-            <form action = '' method = 'post'><input type = 'submit' class = 'btn btn-danger' name ='order' value = 'order'></form>
-            <form action = 'function.php' method = 'post'><input type = 'submit' class = 'btn btn-danger' name ='clean' value = 'clean'></form>
+            </table>
+            <form action='' method='post'><input type='submit' class='btn btn-danger' name='order' value='order'></form>
+            <form action='' method='post'><input type='submit' class='btn btn-danger' name='clean'
+                                                             value='clean'></form>
         </div>
 
     </div>
